@@ -3,13 +3,29 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pacman</title> <!--seteamos un título.-->
-
+    <!--seteamos un título.-->
+    <title>Pacman</title>
     <!--cargamos los scripts con extensión ".js" necesarios para que el juego funcione.-->
     <script src="//cdn.jsdelivr.net/npm/phaser@3.24.1/dist/phaser.min.js"></script>
-    <script src="assets/js/scene1.js"></script>
-    <script src="assets/js/scene2.js"></script>
-    <script src="assets/js/game.js"></script>
+    <script type="module" src="./assets/js/game.js"></script>
+    <script>
+      var game = [];
+      var map = [];
+      var tileset = [];
+      var player = [];
+      var fantasma = [];
+      var firstMov = true;
+      var text = [];
+      var cursors = [];
+      var solid = [];
+      var points = [];
+      var collect = [];
+      var contPoints = 0;
+      var level = [];
+      var random = [];
+      var velX = [];
+      var velY = 90;
+    </script>
   </head>
   <body></body>
 </html>

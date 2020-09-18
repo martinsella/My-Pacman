@@ -1,3 +1,7 @@
+import Pacman from "./pacman.js";
+import Ghost from "./ghost.js";
+import { ghost } from "./ghost.js";
+
 class scene2 extends Phaser.Scene {
   constructor() {
     super("game");
@@ -14,17 +18,20 @@ class scene2 extends Phaser.Scene {
       solid = map
         .createStaticLayer("map", tileset, 0, 0)
         .setCollisionByProperty({ solid: true });
+      points = map.createDynamicLayer("points", tileset, 0, 0);
     } else {
       solid = map
         .createStaticLayer("map2", tileset, 0, 0)
         .setCollisionByProperty({ solid: true });
+      points = map.createDynamicLayer("points2", tileset, 0, 0);
     }
 
-    //creamos al jugador.
-    player = this.physics.add
-      .sprite(405, 270, "atlas", "1_0.png")
-      .setScale(0.85)
-      .setCollideWorldBounds(true); //el jugador choca con los extremos/límites del mundo (no se puede ir de la pantalla).
+    text = this.add.text(352, 214, "Puntaje: " + contPoints, {
+      fill: "white",
+      font: "20px Bahnschrift",
+    });
+
+    player = new Pacman({ scene: this, x: 405, y: 270 });
 
     //creamos las animaciones del personaje.
     this.anims.create({
@@ -124,109 +131,60 @@ class scene2 extends Phaser.Scene {
       repeat: -1,
     });
 
-    //creamos el fantasma.
-    fantasma = this.physics.add
-      .sprite(405, 30, "atlas", "1_24.png")
-      .setScale(0.85)
-      .setVelocityY(velY)
-      .anims.play("down2", true)
-      .setCollideWorldBounds(true);
-
-    //creamos los controles.
+    fantasma = new Ghost({ scene: this, x: 405, y: 45 });
     cursors = this.input.keyboard.createCursorKeys();
 
     //añadimos los colliders y seteamos funciones flechas.
     this.physics.add.collider(player, solid);
-    this.physics.add.collider(fantasma, solid, () => {random = Phaser.Math.Between(0, 2);
-        if (velY == 90) {
-          if (random == 0) {
-            velY = -90;
-            fantasma.setVelocityY(velY).anims.play("up2", true);
-          } else if (random == 1) {
-            velY = 0;
-            velX = 90;
-            fantasma.setVelocityX(velX).anims.play("right2", true);
-          } else if (random == 2) {
-            velY = 0;
-            velX = -90;
-            fantasma.setVelocityX(velX).anims.play("left2", true);
-          }
-        } else if (velY == -90) {
-          if (random == 0) {
-            velY = 90;
-            fantasma.setVelocityY(velY).anims.play("down2", true);
-          } else if (random == 1) {
-            velY = 0;
-            velX = 90;
-            fantasma.setVelocityX(velX).anims.play("right2", true);
-          } else if (random == 2) {
-            velY = 0;
-            velX = -90;
-            fantasma.setVelocityX(velX).anims.play("left2", true);
-          }
-        } else if (velX == 90) {
-          if (random == 0) {
-            velX = -90;
-            fantasma.setVelocityX(velX).anims.play("left2", true);
-          } else if (random == 1) {
-            velX = 0;
-            velY = 90;
-            fantasma.setVelocityY(velY).anims.play("down2", true);
-          } else if (random == 2) {
-            velX = 0;
-            velY = -90;
-            fantasma.setVelocityY(velY).anims.play("up2", true);
-          }
-        } else if ((velX = -90)) {
-          if (random == 0) {
-            velX = 90;
-            fantasma.setVelocityX(velX).anims.play("right2", true);
-          } else if (random == 1) {
-            velX = 0;
-            velY = 90;
-            fantasma.setVelocityY(velY).anims.play("down2", true);
-          } else if (random == 2) {
-            velX = 0;
-            velY = -90;
-            fantasma.setVelocityY(velY).anims.play("up2", true);
-          }
-        }
-      }, null, this);
-    this.physics.add.collider(player, fantasma, () => this.scene.start("game"), null, this);
+    this.physics.add.overlap(player, points);
+    this.physics.add.collider(fantasma, solid, ghost, null, this);
+    this.physics.add.collider(
+      player,
+      fantasma,
+      () => {
+        alert("¡Has perdido!");
+        contPoints = 0;
+        velY = 90;
+        velX = 0;
+        this.scene.start("main");
+      },
+      null,
+      this
+    );
+
+    points.setTileIndexCallback(
+      6,
+      (sprite, tile) => {
+        points.removeTileAt(tile.x, tile.y);
+        contPoints++;
+        this.updateText();
+        return false;
+      },
+      this
+    );
+    points.setTileIndexCallback(
+      12,
+      (sprite, tile) => {
+        points.removeTileAt(tile.x, tile.y);
+        contPoints += 5;
+        this.updateText();
+        return false;
+      },
+      this
+    );
   }
 
-  update() {
-    //seteamos la segunda parte de los controles y la ejecución de animaciones.
-    if (cursors.left.isDown && cursors.up.isDown) {
-      player.anims.play("left", true).setVelocityX(-80).setVelocityY(-80);
-    } else if (cursors.left.isDown && cursors.down.isDown) {
-      player.anims.play("left", true).setVelocityX(-80).setVelocityY(80);
-    } else if (cursors.right.isDown && cursors.up.isDown) {
-      player.anims.play("right", true).setVelocityX(80).setVelocityY(-80);
-    } else if (cursors.right.isDown && cursors.down.isDown) {
-      player.anims.play("right", true).setVelocityX(80).setVelocityY(80);
-    } else if (cursors.left.isDown) {
-      player.anims.play("left", true).setVelocityX(-90);
-    } else if (cursors.right.isDown) {
-      player.anims.play("right", true).setVelocityX(90);
-    } else {
-      player.setVelocityX(0);
+  updateText() {
+    console.log("xd");
+    text.setText("Puntaje: " + contPoints);
+    if (contPoints == 294) {
+      contPoints = 0;
+      velY = 90;
+      velX = 0;
+      alert("¡Has ganado!");
+      this.scene.start("main");
     }
-
-    if (cursors.left.isDown && cursors.up.isDown) {
-      player.anims.play("left", true).setVelocityX(-80).setVelocityY(-80);
-    } else if (cursors.left.isDown && cursors.down.isDown) {
-      player.anims.play("left", true).setVelocityX(-80).setVelocityY(80);
-    } else if (cursors.right.isDown && cursors.up.isDown) {
-      player.anims.play("right", true).setVelocityX(80).setVelocityY(-80);
-    } else if (cursors.right.isDown && cursors.down.isDown) {
-      player.anims.play("right", true).setVelocityX(80).setVelocityY(80);
-    } else if (cursors.down.isDown) {
-      player.anims.play("down", true).setVelocityY(90);
-    } else if (cursors.up.isDown) {
-      player.anims.play("up", true).setVelocityY(-90);
-    } else {
-      player.setVelocityY(0);
-    }
+    return false;
   }
 }
+export default scene2;
